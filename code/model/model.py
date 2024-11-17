@@ -33,7 +33,9 @@ class ProbabilityModeler:
 
     @property
     def params_outputfile(self):
-        return f'../params/{self.sentiment_model}_{self.layer2_datahandler.DATANAME}_{self.MODELNAME}_params.csv'
+        params_dir = '../params'
+        os.makedirs(params_dir, exist_ok = True)
+        return f'{params_dir}/{self.sentiment_model}_{self.layer2_datahandler.DATANAME}_{self.MODELNAME}_params.csv'
 
     def run_model(self, y_var: str = 'p_trump_win'):
         y_var = 'p_trump_win'
