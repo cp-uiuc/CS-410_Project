@@ -19,7 +19,7 @@
      ```bash
      conda create -n cs410_project
      conda activate cs410_project
-     pip install pandas spacy nltk statsmodels
+     pip install pandas spacy nltk statsmodels scikit-learn
      ```
 
 5. **Initialize Data Processor**: Run `process_data.py` to initialize the `DataProcessor` class.
