@@ -12,9 +12,6 @@ from model import ProbabilityModeler
 
 import numpy as np
 
-
-SENTIMENT_MODEL_MAP = {'VADER': SentimentAnalysis}
-
 LAYER2_DATAHANDLER_MAP = {'2RATIOS': SecondLayerDataHandler,
                           '1RATIO' : OneRatioSecondLayerDataHandler}
 
@@ -43,12 +40,9 @@ class TrainModelPipeline:
         self.apply_pipeline()
 
     def fetch_models(self):
-        self.sentiment_model = SENTIMENT_MODEL_MAP.get(self.sentiment_model_name, None)
         self.layer2_processor = LAYER2_DATAHANDLER_MAP.get(self.layer2_process_name, None)
         self.probability_model = PROBABILITY_MODEL_MAP.get(self.probability_model_name, None)
 
-        if self.sentiment_model is None:
-            raise(Exception(f'Sentiment Model:{self.sentiment_model_name} is not recognized'))
         if self.layer2_processor is None:
             raise(Exception(f'Layer2 DataHandler:{self.layer2_process_name} is not recognized'))
         if self.probability_model is None:
@@ -60,6 +54,7 @@ class TrainModelPipeline:
             output_sentiment_file = f'../../data/train/processed/{self.sentiment_model_name}_processed_data.csv'
             self.sentiment_analyzer = SentimentAnalysis(input_file_path = self.INPUT_PROCESSED_DATAFILE,
                                                    output_file_path = output_sentiment_file,
+                                                   model  = self.sentiment_model_name,
                                                    threshold = self.sentiment_threshold)
             self.sentiment_analyzer.process_tweets()
 
@@ -81,4 +76,10 @@ if __name__ == "__main__":
                                           layer2_process_name = '1RATIO',
                                           probability_model_name = 'OLS',
                                           run_sentiment_model = False)
+    
+    #Train Model e.g. 2 (Do not run sentiment model again)
+    train_model_pipeline = TrainModelPipeline(sentiment_model_name = 'TextBlob',
+                                          layer2_process_name = '2RATIOS',
+                                          probability_model_name = 'OLS',
+                                          run_sentiment_model = True)
 

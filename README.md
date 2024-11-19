@@ -19,7 +19,7 @@
      ```bash
      conda create -n cs410_project
      conda activate cs410_project
-     pip install pandas spacy nltk statsmodels scikit-learn
+     pip install pandas spacy nltk statsmodels scikit-learn textblob
      ```
 
 5. **Initialize Data Processor**: Run `process_data.py` to initialize the `DataProcessor` class.
@@ -29,7 +29,11 @@
 
 7. **Data Cleaning and Labeling after adding Sentiment Analysis**: Run `TrainPipeline.py` to configure sentiment analysis, process sentiment data, and generate predictions using the defined pipeline.
 
-*Note* First cd into process/code before running any scripts
+*Note*:  First cd into process/code before running any scripts
+
+**Project Flow:**
+- `process_data.py` → `script.py` → `sentiment_analysis.py` → `process_layer2_data.py` → `model.py`  
+  *(The last three files were combined together in `TrainPipeline.py`)*
 
 
 ## For Testing Model
