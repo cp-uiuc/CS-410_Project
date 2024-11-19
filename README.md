@@ -31,7 +31,7 @@
 
 *Note*:  First cd into process/code before running any scripts
 
-**Project Flow:**
+**Training Flow:**
 - `process_data.py` → `script.py` → `sentiment_analysis.py` → `process_layer2_data.py` → `model.py`  
   *(The last three files were combined together in `TrainPipeline.py`)*
 

@@ -65,19 +65,19 @@ class TrainModelPipeline:
         
 
 if __name__ == "__main__":
-    #Train Model e.g. 1
+    #Train Model with VADER e.g. 1
     train_model_pipeline = TrainModelPipeline(sentiment_model_name = 'VADER',
                                           layer2_process_name = '2RATIOS',
                                           probability_model_name = 'OLS',
                                           run_sentiment_model = True)
 
-    #Train Model e.g. 2 (Do not run sentiment model again)
+    #Train Model with VADER e.g. 2 (Do not run sentiment model again)
     train_model_pipeline = TrainModelPipeline(sentiment_model_name = 'VADER',
                                           layer2_process_name = '1RATIO',
                                           probability_model_name = 'OLS',
                                           run_sentiment_model = False)
     
-    #Train Model e.g. 2 (Do not run sentiment model again)
+    #Train Model with TextBlob 
     train_model_pipeline = TrainModelPipeline(sentiment_model_name = 'TextBlob',
                                           layer2_process_name = '2RATIOS',
                                           probability_model_name = 'OLS',
