@@ -2,6 +2,8 @@
 
 ## How to Run the Project
 
+## For Training Model
+
 1. **Clone the Repository**: Pull this project to your local machine using Git.
 
 2. **Download Dataset**: Retrieve the *US Election 2020 Tweets* dataset from [Kaggle](https://www.kaggle.com/datasets/manchunhui/us-election-2020-tweets/data).
@@ -13,23 +15,25 @@
      ```bash
      conda env create -f environment.yml
      ```
-   - **Windows Users**: Manually create a Conda environment and install the required packages `pandas` and `spacy`.
+   - **Windows Users**: Manually create a Conda environment and install the required packages:
+     ```bash
+     conda create -n cs410_project
+     conda activate cs410_project
+     pip install pandas spacy nltk statsmodels scikit-learn textblob
+     ```
 
 5. **Initialize Data Processor**: Run `process_data.py` to initialize the `DataProcessor` class.
 
 6. **Data Cleaning and Labeling**: Execute `script.py` to clean and label the data using the `DataProcessor` class. 
-   - *Note*: This step may take approximately 5 hours.
+   - *Note*: This step may take approximately 5 hours. You should see a `processed_data.csv` file after successful completion of this step.
 
-7. **Sentiment Analysis**: Run `sentiment_analysis.py` to perform sentiment analysis using VADER, which will add two new columns, `sentiment_score` and `sentiment_label`, to the dataset. After completion, a file named `VADER_processed_data.csv` should appear in the `CS410-Course-Project\data\train\processed` folder.
+7. **Data Cleaning and Labeling after adding Sentiment Analysis**: Run `TrainPipeline.py` to configure sentiment analysis, process sentiment data, and generate predictions using the defined pipeline.
 
-*Note* First cd into process/code before running any scripts
+*Note*:  First cd into process/code before running any scripts
+
+**Training Flow:**
+- `process_data.py` → `script.py` → `sentiment_analysis.py` → `process_layer2_data.py` → `model.py`  
+  *(The last three files were combined together in `TrainPipeline.py`)*
 
 
-# Requirements:
-   - pip3 install spacy
-   - pip3 install spacy_langdetect
-   - python -m spacy download en_core_web_sm
-   - python -m spacy download en_core_web_lg
-
-   - pip3 install nltk
-   - pip3 install statsmodels
+## For Testing Model
