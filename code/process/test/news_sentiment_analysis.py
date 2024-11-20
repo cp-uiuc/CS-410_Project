@@ -46,6 +46,6 @@ class NewsSentimentAnalysis:
 
 
 input_file = '../../../data/test/processed/processed_election_news.json'
-output_file = '../../../data/test/processed/VADER_processed_data_news.csv'
+output_file = '../../../data/test/processed/VADER_processed_news_data.csv'
 analyzer = NewsSentimentAnalysis(input_file, output_file)
 analyzer.process_news_textdata()

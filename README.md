@@ -25,6 +25,11 @@
 *Note* First cd into process/code before running any scripts
 
 
-# Need to pip install:
+# Requirements:
+   - pip3 install spacy
+   - pip3 install spacy_langdetect
+   - python -m spacy download en_core_web_sm
+   - python -m spacy download en_core_web_lg
+
    - pip3 install nltk
    - pip3 install statsmodels
