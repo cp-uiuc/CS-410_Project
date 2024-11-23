@@ -13,7 +13,7 @@ nlp = spacy.load('en_core_web_lg')
 
 class NewsSentimentAnalysis:
 
-    COLS_KEEP = ['textdata', "trump_label", "trump_avg_polarity", "harris_label", "harris_avg_polarity", "aspects"]
+    COLS_KEEP = ['timestamp', 'textdata', "trump_label", "trump_avg_polarity", "harris_label", "harris_avg_polarity", "aspects"]
     
     def __init__(self, input_file_path, output_file_path, threshold=0.05):
         self.input_file_path = input_file_path

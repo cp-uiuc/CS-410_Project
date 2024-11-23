@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
+from news_process_label_data import NewsLabelDataProcessor
+
 class NewsTestDataHandler:
     DATANAME = 'TEST_NEWS'
 
