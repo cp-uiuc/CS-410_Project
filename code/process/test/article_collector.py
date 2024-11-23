@@ -3,7 +3,7 @@ import time
 import json
 
 # Set your API key
-api_key = '###'
+api_key = 'c6Y7P1PHhZKFzuRM10fZd9WcUQuSTWTAOwalMY3C'
 
 # Define endpoint and parameters
 url = 'https://api.thenewsapi.com/v1/news/all'
@@ -16,7 +16,7 @@ for i in range(801):  # Capped at 20,000 (800 pages x 25 results/page) results b
     params = {
         'api_token': api_key,
         'language': 'en',
-        'search': '2024 | presidential | election | Harris | Trump',
+        'search': '(president | presidential | election | campaign) & ("kamala harris" |  "donald trump")',
         'search_fields': 'title',
         'published_after': '2024-01-01',
         'published_before': '2024-11-05',
