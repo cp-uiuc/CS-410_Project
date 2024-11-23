@@ -14,10 +14,13 @@ class SecondLayerDataHandler:
     """
 
     DATANAME = '2RATIOS'
-    def __init__(self, sentiment_model: str):
+    def __init__(self, 
+                 sentiment_model: str,
+                 label_type: str = '538',
+                 trade_type: str = 'close'):
         self.sentiment_model = sentiment_model
         self.df_sentiment_data = self.get_sentiment_data()
-        self.df_label_data = LabelDataProcessor.get_label_data()
+        self.df_label_data = LabelDataProcessor.get_label_data(label_type = label_type, trade_type = trade_type)
         self.df_all_data = self.format_predictor()
 
     def get_sentiment_data(self):
@@ -58,7 +61,11 @@ class OneRatioSecondLayerDataHandler(SecondLayerDataHandler):
 
 class EnhancedSecondLayerDataHandler(SecondLayerDataHandler):
     
-    def __init__(self, sentiment_model: str, y_var: str = 'p_trump_win'):
+    def __init__(self, 
+                 sentiment_model: str, 
+                 label_type: str = '538',
+                 trade_type: str = 'close',
+                 y_var: str = 'p_trump_win'):
         super().__init__(sentiment_model)
         self.y_var = y_var
     

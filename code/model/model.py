@@ -25,9 +25,15 @@ class ProbabilityModeler:
     def __init__(self,
                  sentiment_model: str,
                  layer2_datahandler: SecondLayerDataHandler,
+                 label_type:str = '538',
+                 trade_type: str = 'close',
                  verbose: bool = True):
         self.sentiment_model = sentiment_model
-        self.layer2_datahandler = layer2_datahandler(sentiment_model = self.sentiment_model)
+        self.label_type = label_type
+        self.trade_type = trade_type
+        self.layer2_datahandler = layer2_datahandler(sentiment_model = self.sentiment_model,
+                                                     label_type = self.label_type,
+                                                     trade_type = self.trade_type)
         self.verbose = verbose
 
     def __repr__(self):
@@ -104,7 +110,12 @@ if __name__ == "__main__":
     #     model = modeler.run_model()
 
     # enhanced modeling
-    layer2_datahandler = EnhancedSecondLayerDataHandler(sentiment_model='VADER')
+    #1) Using 538 predictions
+    ##layer2_datahandler = EnhancedSecondLayerDataHandler(sentiment_model='VADER')
+    #2) Using PredictIt
+    layer2_datahandler = EnhancedSecondLayerDataHandler(sentiment_model='VADER',
+                                                        label_type = 'PredictIt',
+                                                        trade_type = 'close')
     prob_modeler_ols = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_type='OLS')
     prob_modeler_ridge = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_type='Ridge', alpha=0.1)
     prob_modeler_lasso = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_type='Lasso', alpha=10.0)

@@ -27,13 +27,17 @@ class TrainModelPipeline:
                  layer2_process_name: str,
                  probability_model_name: str,
                  sentiment_threshold: float = 0.05,
-                 run_sentiment_model: bool = True):
+                 run_sentiment_model: bool = True,
+                 label_type: str = '538',
+                 trade_type: str = 'close'):
         
         self.sentiment_model_name = sentiment_model_name
         self.layer2_process_name = layer2_process_name
         self.probability_model_name = probability_model_name
         self.sentiment_threshold = sentiment_threshold
         self.run_sentiment_model = run_sentiment_model
+        self.label_type = label_type
+        self.trade_type = trade_type
 
         #Fetch the models
         self.fetch_models()
