@@ -35,6 +35,7 @@ class LabelDataProcessor:
         label_data = label_data.rename(columns = {'ecwin_inc': 'p_trump_win', 'ecwin_chal': 'p_trump_lose'})
         return label_data[['p_trump_win', 'p_trump_lose']]
 
+    @staticmethod
     def get_PredictIt_data(trade_type: str = 'close'):
         label_data = pd.read_csv('../../data/train/raw/2020_predictit_data.csv')
         label_data = label_data.rename(columns = {'Date (ET)': 'modeldate'})

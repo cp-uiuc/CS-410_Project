@@ -20,6 +20,7 @@ class SecondLayerDataHandler:
                  trade_type: str = 'close'):
         self.sentiment_model = sentiment_model
         self.df_sentiment_data = self.get_sentiment_data()
+        print(label_type, trade_type)
         self.df_label_data = LabelDataProcessor.get_label_data(label_type = label_type, trade_type = trade_type)
         self.df_all_data = self.format_predictor()
 
@@ -66,7 +67,9 @@ class EnhancedSecondLayerDataHandler(SecondLayerDataHandler):
                  label_type: str = '538',
                  trade_type: str = 'close',
                  y_var: str = 'p_trump_win'):
-        super().__init__(sentiment_model)
+        super().__init__(sentiment_model,
+                         label_type = label_type,
+                         trade_type = trade_type)
         self.y_var = y_var
     
     def format_predictor(self):
