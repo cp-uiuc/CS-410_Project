@@ -49,6 +49,7 @@ class NewsLabelDataProcessor:
         label_data = label_data.rename(columns = {'REP': 'p_trump_win', 'DEM': 'p_trump_lose_1', 'IND': 'p_trump_lose_2'})
         label_data.fillna(0, inplace=True)
         label_data['p_trump_lose'] = label_data['p_trump_lose_1'] + label_data['p_trump_lose_2']
+        label_data.index = pd.to_datetime(label_data.index)
         return label_data[['p_trump_win', 'p_trump_lose']]
 
     @staticmethod

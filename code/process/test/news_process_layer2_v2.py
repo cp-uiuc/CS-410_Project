@@ -54,7 +54,7 @@ class NewsTestDataHandler:
 
         df_all_data = pd.merge(df_predict_data, self.df_label_data[['p_trump_win']], left_index = True, right_index = True)
 
-        return df_predict_data
+        return df_all_data
 
     def label_sentiment(self, score):
         """Label sentiment based on VADER score."""
@@ -70,6 +70,12 @@ if __name__ == "__main__":
     test_handler = NewsTestDataHandler(sentiment_model,
                                        label_type = '538',
                                        trade_type = 'close')
+
+    #Inserting option for PredictIt data
+    predictit_test_handler = NewsTestDataHandler(sentiment_model,
+                                       label_type = 'PredictIt',
+                                       trade_type = 'close')
+
     
     # This will give you the processed test data
     df_test_data = test_handler.df_all_data  # DataFrame with 'date' and 'ratio' columns
