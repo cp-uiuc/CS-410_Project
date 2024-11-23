@@ -1,12 +1,18 @@
 import pandas as pd
 import numpy as np
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from news_process_label_data import NewsLabelDataProcessor
 
 class NewsTestDataHandler:
     DATANAME = 'TEST_NEWS'
 
-    def __init__(self, sentiment_model: str):
+    def __init__(self,
+                 sentiment_model: str,
+                 label_type: str = '538',
+                 trade_type: str = 'close'):
         self.sentiment_model = sentiment_model
+        self.label_type = label_type
+        self.trade_type = trade_type
         self.df_sentiment_data = self.get_sentiment_data()
         self.df_all_data = self.format_predictor()
 

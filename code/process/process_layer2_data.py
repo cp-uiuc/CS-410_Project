@@ -20,7 +20,6 @@ class SecondLayerDataHandler:
                  trade_type: str = 'close'):
         self.sentiment_model = sentiment_model
         self.df_sentiment_data = self.get_sentiment_data()
-        print(label_type, trade_type)
         self.df_label_data = LabelDataProcessor.get_label_data(label_type = label_type, trade_type = trade_type)
         self.df_all_data = self.format_predictor()
 

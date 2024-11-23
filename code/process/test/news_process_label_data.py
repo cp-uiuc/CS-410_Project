@@ -4,7 +4,10 @@ import numpy as np
 class NewsLabelDataProcessor:
 
     """
-    Load the test label data. Data found in daily_summary.csv file from https://projects.fivethirtyeight.com/2024-election-forecast/.
+    Load the test label data. 
+    label_type: 
+        538: Data found in daily_summary.csv file from https://projects.fivethirtyeight.com/2024-election-forecast/
+        PredictIt: Data found on predictit
     """
 
     def __init__(self,

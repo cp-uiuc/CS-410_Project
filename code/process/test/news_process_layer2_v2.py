@@ -5,9 +5,15 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 class NewsTestDataHandler:
     DATANAME = 'TEST_NEWS'
 
-    def __init__(self, sentiment_model: str):
+    def __init__(self, 
+                 sentiment_model: str,
+                 label_type: str = '538',
+                 trade_type: str = 'close'):
+        self.label_type = label_type
+        self.trade_type = trade_type
         self.sentiment_model = sentiment_model
         self.df_sentiment_data = self.get_sentiment_data()
+        self.df_label_data = NewsLabelDataProcessor.get_label_data(label_type = label_type, trade_type = trade_type)
         self.df_all_data = self.format_predictor()
 
     def get_sentiment_data(self):
@@ -44,6 +50,8 @@ class NewsTestDataHandler:
         # Return just the ratio for the test set
         df_predict_data = df_grouped_data[['ratio']]
 
+        df_all_data = pd.merge(df_predict_data, self.df_label_data[['p_trump_win']], left_index = True, right_index = True)
+
         return df_predict_data
 
     def label_sentiment(self, score):
@@ -57,7 +65,9 @@ class NewsTestDataHandler:
         
 if __name__ == "__main__":
     sentiment_model = "ABSA"  # Assuming you're using ABSA for sentiment analysis
-    test_handler = NewsTestDataHandler(sentiment_model)
+    test_handler = NewsTestDataHandler(sentiment_model,
+                                       label_type = '538',
+                                       trade_type = 'close')
     
     # This will give you the processed test data
     df_test_data = test_handler.df_all_data  # DataFrame with 'date' and 'ratio' columns
