@@ -57,10 +57,14 @@ class NewsDataProcessor:
 
         df_processed['textdata'] = df_processed['textdata'].str.replace(' _SEPARATOR_ ', ' . ')
 
+        # Add columns to track mentions of Trump and Harris
+        df_processed['mentions_trump'] = df_processed['textdata'].str.contains(r'\btrump\b', na=False).astype(int)
+        df_processed['mentions_harris'] = df_processed['textdata'].str.contains(r'\bharris\b', na=False).astype(int)
+
         df_processed.reset_index(drop=True, inplace=True)
         
-        columns_to_keep = ['textdata', 'timestamp']
-        df_processed = df_processed.loc[:, columns_to_keep] #keep just textdata and timestamp columns
+        COLS_TO_KEEP = ['textdata', 'timestamp', 'mentions_trump', 'mentions_harris']
+        df_processed = df_processed.loc[:, COLS_TO_KEEP] #keep just textdata and timestamp columns
 
         json_string = df_processed.to_json(orient='records')
         json_string = f"[{json_string}]"
