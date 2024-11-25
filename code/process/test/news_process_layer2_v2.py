@@ -33,15 +33,16 @@ class NewsTestDataHandler:
         df_data = self.df_sentiment_data.copy()
         
         # Perform sentiment analysis using VADER for each article's text
-        sid = SentimentIntensityAnalyzer()
-        df_data['sentiment_score'] = df_data['textdata'].apply(lambda text: sid.polarity_scores(text)['compound'])
-        df_data['sentiment_label'] = df_data['sentiment_score'].apply(self.label_sentiment)
+        # sid = SentimentIntensityAnalyzer()
+        # df_data['sentiment_score'] = df_data['textdata'].apply(lambda text: sid.polarity_scores(text)['compound'])
+        # df_data['sentiment_label'] = df_data['sentiment_score'].apply(self.label_sentiment)
 
         # Map the sentiment labels to numeric values (0, 1, -1)
-        df_data['sentiment_indic'] = df_data['sentiment_label'].map(positive_label)
-        
+        df_data['trump_sentiment_indic'] = df_data['trump_sentiment_label'].map(positive_label)
+        df_data['trump_sentiment_harris'] = df_data['harris_sentiment_label'].map(positive_label)
+
         # Group by 'date' and aggregate sentiment scores
-        df_grouped_data = df_data.groupby(['date']).aggregate({'sentiment_indic': ['sum', 'count']}).reset_index().set_index(['date'])
+        df_grouped_data = df_data.groupby(['date']).aggregate({'trump_sentiment_indic': ['sum', 'count']}).reset_index().set_index(['date'])
         
         # Flatten multi-level columns
         df_grouped_data.columns = df_grouped_data.columns.get_level_values(1)
