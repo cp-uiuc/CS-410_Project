@@ -65,11 +65,19 @@ class EnhancedSecondLayerDataHandler(SecondLayerDataHandler):
                  sentiment_model: str, 
                  label_type: str = '538',
                  trade_type: str = 'close',
-                 y_var: str = 'p_trump_win'):
+                 y_var: str = 'p_trump_win',
+                 min_likes: int = 1000,
+                 min_followers: int = 1000,
+                 min_account_age: int = 365,
+                 english_only: bool = True):
         super().__init__(sentiment_model,
                          label_type = label_type,
                          trade_type = trade_type)
         self.y_var = y_var
+        self.min_likes = min_likes
+        self.min_followers = min_followers
+        self.min_account_age = min_account_age
+        self.english_only = english_only
     
     def format_predictor(self):
         positive_label = {'Neutral' : 0, 'Positive': 1, 'Negative': -1}
@@ -82,6 +90,14 @@ class EnhancedSecondLayerDataHandler(SecondLayerDataHandler):
         user_join = pd.to_datetime(df_data['user_join_date'])
         timestamp = pd.to_datetime(df_data['timestamp'])
         df_data['account_age'] = (timestamp - user_join).dt.days
+
+        # filtering
+        df_data = df_data[df_data['account_age'] > self.min_account_age]
+        df_data = df_data[df_data['user_followers_count'] > self.min_followers]
+        df_data = df_data[df_data['likes'] > self.min_likes]
+
+        if self.english_only:
+            df_data = df_data[df_data['is_en'] == "True"] # double check
 
         # interactions between features
         # df_data['sentiment_followers'] = df_data['sentiment_score'] * df_data['user_followers_count']

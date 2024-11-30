@@ -115,7 +115,11 @@ if __name__ == "__main__":
     #2) Using PredictIt
     layer2_datahandler = EnhancedSecondLayerDataHandler(sentiment_model='VADER',
                                                         label_type = 'PredictIt',
-                                                        trade_type = 'close')
+                                                        trade_type = 'close',
+                                                        min_likes = 1000,
+                                                        min_followers = 1000,
+                                                        min_account_age = 1,
+                                                        english_only = True)
     prob_modeler_ols = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_type='OLS')
     prob_modeler_ridge = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_type='Ridge', alpha=0.1)
     prob_modeler_lasso = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_type='Lasso', alpha=10.0)
