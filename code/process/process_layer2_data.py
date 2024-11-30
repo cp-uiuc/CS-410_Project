@@ -84,14 +84,14 @@ class EnhancedSecondLayerDataHandler(SecondLayerDataHandler):
         df_data['account_age'] = (timestamp - user_join).dt.days
 
         # interactions between features
-        df_data['sentiment_followers'] = df_data['sentiment_score'] * df_data['user_followers_count']
-        df_data['sentiment_likes'] = df_data['sentiment_score'] * df_data['likes']
-        df_data['sentiment_account_age'] = df_data['sentiment_score'] * df_data['account_age']
-        df_data['likes_account_age'] = df_data['likes'] * df_data['account_age']
-        df_data['followers_account_age'] = df_data['user_followers_count'] * df_data['account_age']
+        # df_data['sentiment_followers'] = df_data['sentiment_score'] * df_data['user_followers_count']
+        # df_data['sentiment_likes'] = df_data['sentiment_score'] * df_data['likes']
+        # df_data['sentiment_account_age'] = df_data['sentiment_score'] * df_data['account_age']
+        # df_data['likes_account_age'] = df_data['likes'] * df_data['account_age']
+        # df_data['followers_account_age'] = df_data['user_followers_count'] * df_data['account_age']
 
         # sentiment volatility
-        df_data['sentiment_volatility'] = df_data['sentiment_score'].rolling(window=7, min_periods=1).std()
+        # df_data['sentiment_volatility'] = df_data['sentiment_score'].rolling(window=7, min_periods=1).std()
 
         # retain sentiment score, likes, account age, user followers count
         df_grouped_data = df_data.groupby(['date', 'candidate']).aggregate({
@@ -100,12 +100,12 @@ class EnhancedSecondLayerDataHandler(SecondLayerDataHandler):
             'likes': 'mean',
             'user_followers_count' : 'mean',
             'account_age': 'mean',
-            'sentiment_followers': 'mean',
-            'sentiment_likes': 'mean',
-            'sentiment_account_age': 'mean',
-            'likes_account_age': 'mean',
-            'followers_account_age': 'mean',
-            'sentiment_volatility': 'mean',
+            # 'sentiment_followers': 'mean',
+            # 'sentiment_likes': 'mean',
+            # 'sentiment_account_age': 'mean',
+            # 'likes_account_age': 'mean',
+            # 'followers_account_age': 'mean',
+            # 'sentiment_volatility': 'mean',
         }).reset_index().set_index(['date', 'candidate'])
 
         # track rolling sentiment score and indicator
@@ -115,8 +115,19 @@ class EnhancedSecondLayerDataHandler(SecondLayerDataHandler):
         df_grouped_data['ratio'] = df_grouped_data['sentiment_indic'] / (df_grouped_data['sentiment_indic'].abs() + 1)
 
         pivot_fields = [
-            'ratio', 'sentiment_score', 'likes', 'account_age', 'user_followers_count', 'rolling_sentiment_score', 'rolling_sentiment_indic',
-            'sentiment_followers', 'sentiment_likes', 'sentiment_account_age', 'likes_account_age', 'followers_account_age', 'sentiment_volatility',
+            'ratio', 
+            'sentiment_score',
+            'likes', 
+            'account_age', 
+            'user_followers_count', 
+            'rolling_sentiment_score', 
+            'rolling_sentiment_indic',
+            # 'sentiment_followers', 
+            # 'sentiment_likes', 
+            # 'sentiment_account_age', 
+            # 'likes_account_age', 
+            # 'followers_account_age', 
+            # 'sentiment_volatility',
         ]
         pivoted_dfs = {}
         for field in pivot_fields:
