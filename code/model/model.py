@@ -3,7 +3,7 @@ import os
 import sys
 import re
 
-sys.path.append('../process/')
+sys.path.append('../process/train/')
 from process_layer2_data import SecondLayerDataHandler, OneRatioSecondLayerDataHandler, EnhancedSecondLayerDataHandler
 import numpy as np
 
@@ -48,6 +48,7 @@ class ProbabilityModeler:
     def run_model(self, y_var: str = 'p_trump_win'):
         y_var = 'p_trump_win'
         df_data = self.layer2_datahandler.df_all_data
+        df_data = df_data.fillna(0)
         x_vars = [col for col in df_data.columns if col != y_var]
         model = sm.OLS(df_data[y_var], df_data[x_vars]).fit()
         if self.verbose:

@@ -26,11 +26,12 @@ MAIN_COLS_KEEP = ['timestamp', 'country', 'is_en', 'trump_sentiment_label',
                  'biden_sentiment_label', 'mentions_trump', 'mentions_biden', 'likes', 
                  'user_join_date', 'user_followers_count']
 class SentimentAnalysis:
-    def __init__(self, input_file_path, output_file_path, model = "VADER", threshold=0.05):
+    def __init__(self, input_file_path, output_file_path, model = "VADER", threshold=0.05, batch_size=32):
         self.input_file_path = input_file_path
         self.output_file_path = output_file_path
         self.model = model
         self.threshold = threshold
+        self.batch_size = batch_size
         self.df = pd.read_csv(self.input_file_path)
 
         self.COLS_KEEP = MAIN_COLS_KEEP if self.model == 'ABSA' else MAIN_COLS_KEEP + ['biden_sentiment_score', 'trump_sentiment_score']
@@ -73,18 +74,24 @@ class SentimentAnalysis:
                 """
                 Calculate sentiment scores and labels based on mentions in the row.
                 """
-                trump_score, trump_label = None, None
-                biden_score, biden_label = None, None
+                trump_score, trump_label = 0, 'neutral'
+                biden_score, biden_label = 0, 'neutral'
 
                 # Calculate sentiment for Trump mentions
                 if row['mentions_trump'] == 1:
                     trump_score = self.calculate_sentiment_score(row['textdata'])
                     trump_label = self.label_sentiment(trump_score)
+                elif row['mentions_trump'] == 0:
+                    trump_score = 0
+                    trump_label = 'neutral'
 
                 # Calculate sentiment for Biden mentions
                 if row['mentions_biden'] == 1:
                     biden_score = self.calculate_sentiment_score(row['textdata'])
                     biden_label = self.label_sentiment(biden_score)
+                elif row['mentions_biden'] == 0:
+                    biden_score = 0
+                    biden_label = 'neutral'
 
                 return trump_score, trump_label, biden_score, biden_label
 
@@ -154,11 +161,11 @@ class SentimentAnalysis:
     def label_sentiment(self, score):
         #Labels sentiment based on the score and threshold
         if score >= self.threshold:
-            return "Positive"
+            return "positive"
         elif score <= -self.threshold:
-            return "Negative"
+            return "negative"
         else:
-            return "Neutral"
+            return "neutral"
         
     def get_batch_aspect_sentiment(self, batch_texts, aspect):
         """
@@ -190,17 +197,18 @@ class SentimentAnalysis:
                 sentiment_labels[batch_texts.index.get_loc(idx)] = sentiment
 
         return {aspect: sentiment_labels}
+
     
     def __repr__(self):
         return f'SentimentModel:{self.model}'
 
 
 if __name__ == "__main__":
-    input_file = '../../data/train/processed/processed_data.csv'
-    output_file = '../../data/train/processed/TextBlob_processed_data.csv'
+    input_file = '../../../data/train/processed/processed_data.csv'
+    output_file = '../../../data/train/processed/ABSA_processed_data.csv'
 
     # Initialize with desired model ('VADER' or 'TextBlob')
-    analyzer = SentimentAnalysis(input_file, output_file, model = "TextBlob")
+    analyzer = SentimentAnalysis(input_file, output_file, model = "ABSA")
     analyzer.process_tweets()
 
     df = pd.read_csv(output_file)

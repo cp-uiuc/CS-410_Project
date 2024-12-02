@@ -3,7 +3,7 @@ import os
 import sys
 import re
 
-sys.path.append('../process/')
+sys.path.append('../process/train/')
 from process_layer2_data import SecondLayerDataHandler, OneRatioSecondLayerDataHandler
 from sentiment_analysis import SentimentAnalysis
 
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     train_model_pipeline = TrainModelPipeline(sentiment_model_name = 'VADER',
                                           layer2_process_name = '2RATIOS',
                                           probability_model_name = 'OLS',
-                                          run_sentiment_model = True)
+                                          run_sentiment_model = False)
 
     #Train Model with VADER e.g. 2 (Do not run sentiment model again)
     train_model_pipeline = TrainModelPipeline(sentiment_model_name = 'VADER',
@@ -85,5 +85,10 @@ if __name__ == "__main__":
     train_model_pipeline = TrainModelPipeline(sentiment_model_name = 'TextBlob',
                                           layer2_process_name = '2RATIOS',
                                           probability_model_name = 'OLS',
-                                          run_sentiment_model = True)
+                                          run_sentiment_model = False)
 
+    #Train Model with ABSA (running sentiment model can take approximately 2-4 hours)
+    train_model_pipeline = TrainModelPipeline(sentiment_model_name='ABSA',
+                                              layer2_process_name='2RATIOS',
+                                              probability_model_name='OLS',
+                                              run_sentiment_model=False)

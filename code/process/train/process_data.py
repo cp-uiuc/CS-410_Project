@@ -28,12 +28,24 @@ class DataProcessor:
         """
         Fetch raw data
         """
-        biden_tweets = pd.read_csv('../../data/train/raw/hashtag_joebiden.csv', encoding_errors='ignore', lineterminator='\n')
-        biden_tweets['candidate'] = 'other'
-        trump_tweets = pd.read_csv('../../data/train/raw/hashtag_donaldtrump.csv', encoding_errors='ignore', lineterminator='\n')
-        trump_tweets['candidate'] = 'trump'
+        biden_tweets = pd.read_csv('../../../data/train/raw/hashtag_joebiden.csv', encoding_errors='ignore', lineterminator='\n')
+        biden_tweets['mentions_biden'] = 1
+        biden_tweets['mentions_trump'] = 0
+        
+        trump_tweets = pd.read_csv('../../../data/train/raw/hashtag_donaldtrump.csv', encoding_errors='ignore', lineterminator='\n')
+        trump_tweets['mentions_trump'] = 1
+        trump_tweets['mentions_biden'] = 0
         all_tweets = pd.concat([biden_tweets, trump_tweets])
+
+        # Drop duplicates based on tweet_id and update mentions columns
+        # Use groupby to find duplicates by tweet_id and update mentions columns
+        all_tweets['mentions_trump'] = all_tweets.groupby('tweet_id')['mentions_trump'].transform('max')
+        all_tweets['mentions_biden'] = all_tweets.groupby('tweet_id')['mentions_biden'].transform('max')
+
+        # Drop duplicate rows based on tweet_id, keeping the first occurrence
         all_tweets = all_tweets.drop_duplicates('tweet_id')
+
+        # Convert timestamp to datetime format
         all_tweets['timestamp'] = pd.to_datetime(all_tweets['created_at'])
         
         self.df_data = all_tweets
@@ -71,7 +83,7 @@ class DataProcessor:
         
         if dump_processed:
             #Check if file dir exists
-            filedir = '../../data/train/processed/'
+            filedir = '../../../data/train/processed/'
             if not os.path.exists(filedir):
                 os.makedirs(filedir)
             filename = os.path.join(filedir, f'{processed_filename}.csv')
