@@ -8,7 +8,7 @@ from process_layer2_data import SecondLayerDataHandler, OneRatioSecondLayerDataH
 import numpy as np
 
 import statsmodels.api as sm
-from sklearn.linear_model import Ridge, Lasso
+from sklearn.linear_model import Ridge, Lasso, LinearRegression
 from sklearn.ensemble import GradientBoostingRegressor
 
 class ProbabilityModeler:
@@ -69,12 +69,13 @@ class EnhancedProbabilityModeler(ProbabilityModeler):
     def __init__(self,
                  layer2_datahandler,
                  model_type: str = 'OLS',
-                 alpha: float = 1.0,
-                 verbose: bool = True):
+                 verbose: bool = True, 
+                 **kwargs):
         self.layer2_datahandler = layer2_datahandler
         self.verbose = verbose
         self.model_type = model_type
-        self.alpha = alpha
+        self.kwargs = kwargs
+        print(f"{self.model_type} kwargs: {self.kwargs}")
 
     def run_model(self, y_var: str = 'p_trump_win', rolling = True):
         y_var = f"{y_var}_rolling" if rolling else y_var
@@ -83,19 +84,20 @@ class EnhancedProbabilityModeler(ProbabilityModeler):
         X = df_data[x_vars]
         y = df_data[y_var]
 
-        if self.model_type == 'OLS':
-            model = sm.OLS(y, X).fit()
+        if self.model_type == 'OLS' or self.model_type == 'Linear Regression':
+            model = LinearRegression().fit(X, y)
+            print(f"X columns: {X.columns}")
         elif self.model_type == 'Ridge':
-            model = Ridge(alpha=self.alpha).fit(X, y)
+            model = Ridge(**self.kwargs).fit(X, y)
         elif self.model_type == 'Lasso':
-            model = Lasso(alpha=self.alpha).fit(X, y)
+            model = Lasso(**self.kwargs).fit(X, y)
         elif self.model_type == 'Gradient Boosting':
-            model = GradientBoostingRegressor().fit(X, y)
+            model = GradientBoostingRegressor(**self.kwargs).fit(X, y)
         else:
             raise ValueError(f'Invalid model_type: {self.model_type}')
 
         if self.verbose:
-            print(f'Modelname: {self.model_type},Sentiment Model: {self.layer2_datahandler.sentiment_model},  rsquared: {model.score(X, y) if self.model_type != "OLS" else model.rsquared:.2f}')
+            print(f'Modelname: {self.model_type}, Sentiment Model: {self.layer2_datahandler.sentiment_model}, kwargs: {self.kwargs}, rsquared: {model.score(X, y)}')
         return model
 
 
@@ -111,19 +113,31 @@ if __name__ == "__main__":
 
     # enhanced modeling
     #1) Using 538 predictions
-    ##layer2_datahandler = EnhancedSecondLayerDataHandler(sentiment_model='VADER')
+    layer2_datahandler = EnhancedSecondLayerDataHandler(sentiment_model='VADER',
+                                                        label_type = '538',
+                                                        trade_type = 'close',
+                                                        min_likes = 10,
+                                                        min_followers = 10,
+                                                        min_account_age = 10,
+                                                        english_only = True)
     #2) Using PredictIt
     layer2_datahandler = EnhancedSecondLayerDataHandler(sentiment_model='VADER',
                                                         label_type = 'PredictIt',
                                                         trade_type = 'close',
-                                                        min_likes = 1000,
-                                                        min_followers = 1000,
-                                                        min_account_age = 1,
+                                                        min_likes = 10,
+                                                        min_followers = 10,
+                                                        min_account_age = 10,
                                                         english_only = True)
     prob_modeler_ols = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_type='OLS')
-    prob_modeler_ridge = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_type='Ridge', alpha=0.1)
-    prob_modeler_lasso = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_type='Lasso', alpha=10.0)
-    prob_modeler_gb = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_type='Gradient Boosting')
+    prob_modeler_ridge1 = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_type='Ridge', alpha=0.1)
+    prob_modeler_ridge3 = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_type='Ridge', alpha=0.05)
+    prob_modeler_ridge6 = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_type='Ridge', alpha=0.2)
+    prob_modeler_ridge8 = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_type='Ridge', alpha=0.3)
+    prob_modeler_lasso01 = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_type='Lasso', alpha=0.1)
+    prob_modeler_lasso05 = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_type='Lasso', alpha=0.2)
+    prob_modeler_lasso1 = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_type='Lasso', alpha=0.3)
+    prob_modeler_lasso10 = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_type='Lasso', alpha=0.4)
+    prob_modeler_gb = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_type='Gradient Boosting', n_estimators=50, max_depth=2)
 
     # prob_modeler_ols.plot_win_and_sentiment()
     # prob_modeler_ols.plot_win_percentage()
@@ -131,9 +145,15 @@ if __name__ == "__main__":
     
     model_pipeline = [
         prob_modeler_ols, 
-        prob_modeler_ridge, 
-        prob_modeler_lasso, 
-        prob_modeler_gb
+        prob_modeler_ridge1,
+        prob_modeler_ridge3,
+        prob_modeler_ridge6,
+        prob_modeler_ridge8, 
+        prob_modeler_lasso01, 
+        prob_modeler_lasso05,
+        prob_modeler_lasso1,
+        prob_modeler_lasso10,
+        prob_modeler_gb,
     ]
 
     for modeler in model_pipeline:

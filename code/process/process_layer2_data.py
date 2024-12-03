@@ -1,5 +1,5 @@
 import pandas as pd
-from process_label_data import LabelDataProcessor
+from process_label_data import LabelDataProcessor, LabelTestDataProcessor
 import numpy as np
 
 class SecondLayerDataHandler:
@@ -16,17 +16,29 @@ class SecondLayerDataHandler:
     DATANAME = '2RATIOS'
     def __init__(self, 
                  sentiment_model: str,
-                 label_type: str = '538',
-                 trade_type: str = 'close'):
+                 label_type: str = 'PredictIt',
+                 trade_type: str = 'close',
+                 test_sentiment_model: str = 'ABSA'):
         self.sentiment_model = sentiment_model
+        self.test_sentiment_model = test_sentiment_model
         self.df_sentiment_data = self.get_sentiment_data()
+        self.df_test_sentiment_data = self.get_test_sentiment_data()
         self.df_label_data = LabelDataProcessor.get_label_data(label_type = label_type, trade_type = trade_type)
+        self.df_test_label_data = LabelTestDataProcessor.get_label_data(label_type = label_type, trade_type = trade_type)
         self.df_all_data = self.format_predictor()
 
     def get_sentiment_data(self):
         df_sentiment_data = pd.read_csv(f'../../data/train/processed/{self.sentiment_model}_processed_data.csv')
-        df_sentiment_data.index = pd.to_datetime(df_sentiment_data['timestamp'])
-        df_sentiment_data['date'] = df_sentiment_data.index.date
+        df_sentiment_data.index = pd.to_datetime(df_sentiment_data['timestamp']).dt.date
+        df_sentiment_data['date'] = df_sentiment_data.index
+        print(df_sentiment_data.head())
+        return df_sentiment_data
+    
+    def get_test_sentiment_data(self):
+        df_sentiment_data = pd.read_csv(f'../../data/test/processed/{self.test_sentiment_model}_processed_news_data.csv')
+        df_sentiment_data.index = pd.to_datetime(df_sentiment_data['timestamp'], unit='ms').dt.date
+        df_sentiment_data['date'] = df_sentiment_data.index
+        print(df_sentiment_data.head())
         return df_sentiment_data
 
     def format_predictor(self):
@@ -66,25 +78,25 @@ class EnhancedSecondLayerDataHandler(SecondLayerDataHandler):
                  label_type: str = '538',
                  trade_type: str = 'close',
                  y_var: str = 'p_trump_win',
-                 min_likes: int = 1000,
-                 min_followers: int = 1000,
-                 min_account_age: int = 365,
+                 min_likes: int = 1,
+                 min_followers: int = 1,
+                 min_account_age: int = 1,
                  english_only: bool = True):
-        super().__init__(sentiment_model,
-                         label_type = label_type,
-                         trade_type = trade_type)
         self.y_var = y_var
         self.min_likes = min_likes
         self.min_followers = min_followers
         self.min_account_age = min_account_age
         self.english_only = english_only
+        super().__init__(sentiment_model,
+                         label_type = label_type,
+                         trade_type = trade_type)
     
     def format_predictor(self):
         positive_label = {'Neutral' : 0, 'Positive': 1, 'Negative': -1}
         df_data = self.df_sentiment_data.copy()
 
         df_data['sentiment_indic'] = df_data['sentiment_label'].map(positive_label)
-
+        
         # additional feature engineering
         # account age
         user_join = pd.to_datetime(df_data['user_join_date'])
@@ -97,7 +109,7 @@ class EnhancedSecondLayerDataHandler(SecondLayerDataHandler):
         df_data = df_data[df_data['likes'] > self.min_likes]
 
         if self.english_only:
-            df_data = df_data[df_data['is_en'] == "True"] # double check
+            df_data = df_data[df_data['is_en']] # double check
 
         # interactions between features
         # df_data['sentiment_followers'] = df_data['sentiment_score'] * df_data['user_followers_count']
@@ -111,11 +123,11 @@ class EnhancedSecondLayerDataHandler(SecondLayerDataHandler):
 
         # retain sentiment score, likes, account age, user followers count
         df_grouped_data = df_data.groupby(['date', 'candidate']).aggregate({
-            'sentiment_score': 'mean',
+            # 'sentiment_score': 'mean',
             'sentiment_indic': 'mean',
-            'likes': 'mean',
-            'user_followers_count' : 'mean',
-            'account_age': 'mean',
+            # 'likes': 'mean',
+            # 'user_followers_count' : 'mean',
+            # 'account_age': 'mean',
             # 'sentiment_followers': 'mean',
             # 'sentiment_likes': 'mean',
             # 'sentiment_account_age': 'mean',
@@ -126,17 +138,18 @@ class EnhancedSecondLayerDataHandler(SecondLayerDataHandler):
 
         # track rolling sentiment score and indicator
         df_grouped_data['rolling_sentiment_indic'] = df_grouped_data['sentiment_indic'].rolling(window=7, min_periods=1).mean()
-        df_grouped_data['rolling_sentiment_score'] = df_grouped_data['sentiment_score'].rolling(window=7, min_periods=1).mean()
+        # df_grouped_data['rolling_sentiment_score'] = df_grouped_data['sentiment_score'].rolling(window=7, min_periods=1).mean()
 
         df_grouped_data['ratio'] = df_grouped_data['sentiment_indic'] / (df_grouped_data['sentiment_indic'].abs() + 1)
 
         pivot_fields = [
             'ratio', 
-            'sentiment_score',
-            'likes', 
-            'account_age', 
-            'user_followers_count', 
-            'rolling_sentiment_score', 
+            # 'sentiment_score',
+            'sentiment_indic',
+            # 'likes', 
+            # 'account_age', 
+            # 'user_followers_count', 
+            # 'rolling_sentiment_score', 
             'rolling_sentiment_indic',
             # 'sentiment_followers', 
             # 'sentiment_likes', 
@@ -157,7 +170,10 @@ class EnhancedSecondLayerDataHandler(SecondLayerDataHandler):
         df_all_data = pd.merge(df_predict_data, self.df_label_data[['p_trump_win']], left_index=True, right_index=True, how='inner')
         df_all_data[f'p_trump_win_rolling'] = df_all_data['p_trump_win'].rolling(window=7, min_periods=1).mean()
         
-        df_all_data['day_of_week'] = df_all_data.index.dayofweek
-        df_all_data['is_weekend'] = df_all_data['day_of_week'].apply(lambda x: 1 if x > 4 else 0)
+        # df_all_data['day_of_week'] = df_all_data.index.dayofweek
+        # df_all_data['is_weekend'] = df_all_data['day_of_week'].apply(lambda x: 1 if x > 4 else 0)
 
         return df_all_data
+
+    def format_test(self):
+        pass
