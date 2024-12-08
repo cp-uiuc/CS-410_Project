@@ -58,7 +58,7 @@ class SentimentAnalysis:
                 "yangheng/deberta-v3-base-absa-v1.1"
             ).to(self.device)
         else:
-            raise ValueError("Invalid model choice. Choose 'VADER' or 'TextBlob'.")
+            raise ValueError("Invalid model choice. Choose 'VADER' or 'TextBlob' or 'ABSA'.")
         
         #Load the data
         self.df = pd.read_csv(self.input_file_path)

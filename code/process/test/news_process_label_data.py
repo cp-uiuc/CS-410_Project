@@ -24,7 +24,7 @@ class NewsLabelDataProcessor:
         """
         Fetch raw data
         """
-        label_data = pd.read_csv('../../../data/test/raw/daily_summary.csv')
+        label_data = pd.read_csv('../../data/test/raw/daily_summary.csv')
         label_data = label_data[(label_data['state_abb'].isna()) & (label_data['variable'] == 'electoral college') & (label_data['metric'] == 'p_win')]
         label_data = label_data.pivot(index='model_date', columns='party', values='value')
         label_data = label_data.rename(columns = {'REP': 'p_trump_win', 'DEM': 'p_trump_lose_1', 'IND': 'p_trump_lose_2'})
@@ -43,7 +43,7 @@ class NewsLabelDataProcessor:
 
     @staticmethod
     def get_538_label_data():
-        label_data = pd.read_csv('../../../data/test/raw/daily_summary.csv')
+        label_data = pd.read_csv('../../data/test/raw/daily_summary.csv')
         label_data = label_data[(label_data['state_abb'].isna()) & (label_data['variable'] == 'electoral college') & (label_data['metric'] == 'p_win')]
         label_data = label_data.pivot(index='model_date', columns='party', values='value')
         label_data = label_data.rename(columns = {'REP': 'p_trump_win', 'DEM': 'p_trump_lose_1', 'IND': 'p_trump_lose_2'})
@@ -54,7 +54,7 @@ class NewsLabelDataProcessor:
 
     @staticmethod
     def get_PredictIt_data(trade_type: str = 'close'):
-        label_data = pd.read_csv('../../../data/test/raw/2024_predictit_data.csv')
+        label_data = pd.read_csv('../../data/test/raw/2024_predictit_data.csv')
         label_data = label_data.rename(columns = {'Date (ET)': 'modeldate'})
         label_data.index = pd.to_datetime(label_data['modeldate'])
         if trade_type == 'close':

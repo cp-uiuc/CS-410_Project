@@ -24,7 +24,10 @@ class SecondLayerDataHandler:
         self.df_all_data = self.format_predictor()
 
     def get_sentiment_data(self):
-        df_sentiment_data = pd.read_csv(f'../../data/train/processed/{self.sentiment_model}_processed_data.csv')
+        if self.sentiment_model == 'ABSA':
+            df_sentiment_data = pd.read_csv('https://uofi.box.com/shared/static/db5nc0sla628akyhisniuyj2tqfsf5t4.csv?raw=1')
+        else: 
+            df_sentiment_data = pd.read_csv(f'../../data/train/processed/{self.sentiment_model}_processed_data.csv')
         df_sentiment_data.index = pd.to_datetime(df_sentiment_data['timestamp'])
         df_sentiment_data['date'] = df_sentiment_data.index.date
         return df_sentiment_data

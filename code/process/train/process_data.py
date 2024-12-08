@@ -28,11 +28,11 @@ class DataProcessor:
         """
         Fetch raw data
         """
-        biden_tweets = pd.read_csv('../../../data/train/raw/hashtag_joebiden.csv', encoding_errors='ignore', lineterminator='\n')
+        biden_tweets = pd.read_csv('https://uofi.box.com/shared/static/h44u9j1rwwpw3b7j21r9rnddna9l42tj.csv?raw=1', encoding_errors='ignore', lineterminator='\n')
         biden_tweets['mentions_biden'] = 1
         biden_tweets['mentions_trump'] = 0
         
-        trump_tweets = pd.read_csv('../../../data/train/raw/hashtag_donaldtrump.csv', encoding_errors='ignore', lineterminator='\n')
+        trump_tweets = pd.read_csv('https://uofi.box.com/shared/static/pei4oh01t78d23s70jtkmflgr2st67sd.csv?raw=1', encoding_errors='ignore', lineterminator='\n')
         trump_tweets['mentions_trump'] = 1
         trump_tweets['mentions_biden'] = 0
         all_tweets = pd.concat([biden_tweets, trump_tweets])
