@@ -20,13 +20,13 @@ class SecondLayerDataHandler:
                  trade_type: str = 'close',
                  test_sentiment_model: str = 'ABSA'):
         self.sentiment_model = sentiment_model
-        self.test_sentiment_model = test_sentiment_model
+        # self.test_sentiment_model = test_sentiment_model
         self.df_sentiment_data = self.get_sentiment_data()
-        self.df_test_sentiment_data = self.get_test_sentiment_data()
+        # self.df_test_sentiment_data = self.get_test_sentiment_data()
         self.df_label_data = LabelDataProcessor.get_label_data(label_type = label_type, trade_type = trade_type)
-        self.df_test_label_data = LabelTestDataProcessor.get_label_data(label_type = label_type, trade_type = trade_type)
+        # self.df_test_label_data = LabelTestDataProcessor.get_label_data(label_type = label_type, trade_type = trade_type)
         self.df_all_data = self.format_predictor()
-        self.df_test_data = self.format_test()
+        # self.df_test_data = self.format_test()
 
     def get_sentiment_data(self):
         df_sentiment_data = pd.read_csv(f'../../data/train/processed/{self.sentiment_model}_processed_data.csv')

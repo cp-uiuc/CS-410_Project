@@ -204,11 +204,13 @@ class SentimentAnalysis:
 
 
 if __name__ == "__main__":
+    model = "ABSA"
+
     input_file = '../../../data/train/processed/processed_data.csv'
-    output_file = '../../../data/train/processed/ABSA_processed_data.csv'
+    output_file = f'../../../data/train/processed/{model}_processed_data.csv'
 
     # Initialize with desired model ('VADER' or 'TextBlob')
-    analyzer = SentimentAnalysis(input_file, output_file, model = "ABSA")
+    analyzer = SentimentAnalysis(input_file, output_file, model = model)
     analyzer.process_tweets()
 
     df = pd.read_csv(output_file)

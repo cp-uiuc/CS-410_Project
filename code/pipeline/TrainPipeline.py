@@ -8,14 +8,18 @@ from process_layer2_data import SecondLayerDataHandler, OneRatioSecondLayerDataH
 from sentiment_analysis import SentimentAnalysis
 
 sys.path.append('../model/')
-from model import ProbabilityModeler
+from model import ProbabilityModeler, EnhancedProbabilityModeler
 
 import numpy as np
 
 LAYER2_DATAHANDLER_MAP = {'2RATIOS': SecondLayerDataHandler,
                           '1RATIO' : OneRatioSecondLayerDataHandler}
 
-PROBABILITY_MODEL_MAP = {'OLS': ProbabilityModeler}
+PROBABILITY_MODEL_MAP = {'OLS': EnhancedProbabilityModeler,
+                         'Ridge': EnhancedProbabilityModeler,
+                         'Lasso': EnhancedProbabilityModeler,
+                         'Gradient Boosting': EnhancedProbabilityModeler,
+                         'SARIMAX': EnhancedProbabilityModeler}
 
 class TrainModelPipeline:
 
@@ -31,7 +35,8 @@ class TrainModelPipeline:
                  run_sentiment_model: bool = True,
                  label_type: str = '538',
                  trade_type: str = 'close',
-                 use_box: bool = True):
+                 use_box: bool = True,
+                 **kwargs):
         
         self.sentiment_model_name = sentiment_model_name
         self.layer2_process_name = layer2_process_name
@@ -40,6 +45,7 @@ class TrainModelPipeline:
         self.run_sentiment_model = run_sentiment_model
         self.label_type = label_type
         self.trade_type = trade_type
+        self.kwargs = kwargs
 
         #Fetch the models
         self.fetch_models()
@@ -65,8 +71,11 @@ class TrainModelPipeline:
             self.sentiment_analyzer.process_tweets()
 
         #3/4) Apply Layer2DataHandler and apply probability model
-        self.prob_modeler = self.probability_model(sentiment_model= self.sentiment_model_name,
-                                              layer2_datahandler = self.layer2_processor)
+        self.prob_modeler = self.probability_model(model_type = "Train",
+                                              sentiment_model = self.sentiment_model_name,
+                                              model_name = self.probability_model_name,
+                                              layer2_datahandler = self.layer2_processor,
+                                              **self.kwargs)
         self.prob_modeler.run_model()
         
 
@@ -85,17 +94,33 @@ if __name__ == "__main__":
                                           run_sentiment_model = False,
                                           use_box = True)
     
+    #Train Model with VADER e.g. 3 (Do not run sentiment model again)
+    test_model_pipeline  = TrainModelPipeline(sentiment_model_name = 'VADER',
+                                          layer2_process_name = '2RATIOS',
+                                          probability_model_name = 'Gradient Boosting',
+                                          run_sentiment_model = False,
+                                          use_box = True,
+                                          n_estimators=50, max_depth=2)
+    
     #Train Model with TextBlob 
     train_model_pipeline = TrainModelPipeline(sentiment_model_name = 'TextBlob',
                                           layer2_process_name = '2RATIOS',
                                           probability_model_name = 'OLS',
                                           run_sentiment_model = False,
                                           use_box = True)
+    
+    # Train Model with TextBlob, Gradient Boosting
+    train_model_pipeline = TrainModelPipeline(sentiment_model_name = 'TextBlob',
+                                          layer2_process_name = '2RATIOS',
+                                          probability_model_name = 'Gradient Boosting',
+                                          run_sentiment_model = False,
+                                          use_box = True,
+                                          n_estimators=50, max_depth=2)
 
     #Train Model with ABSA. Running sentiment model can take approximately 2-4 hours and requires Pytorch + CUDA.
     # So, ABSA sentiment analysis data has been pre-run and results are saved in a csv in the cloud (UIUC Box).
-    train_model_pipeline = TrainModelPipeline(sentiment_model_name='ABSA',
-                                              layer2_process_name='2RATIOS',
-                                              probability_model_name='OLS',
-                                              run_sentiment_model=False,
-                                              use_box = True)
+    # train_model_pipeline = TrainModelPipeline(sentiment_model_name='ABSA',
+    #                                           layer2_process_name='2RATIOS',
+    #                                           probability_model_name='OLS',
+    #                                           run_sentiment_model=False,
+    #                                           use_box = True)

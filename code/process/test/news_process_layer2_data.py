@@ -9,7 +9,8 @@ class NewsSecondLayerDataHandler:
     def __init__(self,
                  sentiment_model: str,
                  label_type: str = '538',
-                 trade_type: str = 'close'):
+                 trade_type: str = 'close',
+                 **kwargs):
         self.sentiment_model = sentiment_model
         self.label_type = label_type
         self.trade_type = trade_type

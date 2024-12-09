@@ -186,11 +186,13 @@ class NewsSentimentAnalysis:
         return sentiment_labels
 
 if __name__ == "__main__":
+    model = "VADER" 
+
     input_file = '../../../data/test/processed/processed_election_news.json'
-    output_file = '../../../data/test/processed/TextBlob_processed_news_data.csv'
+    output_file = f'../../../data/test/processed/{model}_processed_news_data.csv'
 
     # Initialize with desired model ('VADER' or 'TextBlob')
-    analyzer = NewsSentimentAnalysis(input_file, output_file, model = "TextBlob")
+    analyzer = NewsSentimentAnalysis(input_file, output_file, model = model)
     analyzer.process_news()
 
     df = pd.read_csv(output_file)
