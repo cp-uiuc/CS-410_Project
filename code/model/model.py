@@ -3,8 +3,11 @@ import os
 import sys
 import re
 
-sys.path.append('../process/')
+sys.path.append('../process/train/')
 from process_layer2_data import SecondLayerDataHandler, OneRatioSecondLayerDataHandler, EnhancedSecondLayerDataHandler
+sys.path.append('../process/test/')
+from news_process_layer2_data import NewsSecondLayerDataHandler
+
 import numpy as np
 
 import statsmodels.api as sm
@@ -27,16 +30,24 @@ class ProbabilityModeler:
     
     def __init__(self,
                  sentiment_model: str,
-                 layer2_datahandler: SecondLayerDataHandler,
+                 layer2_datahandler: SecondLayerDataHandler | NewsSecondLayerDataHandler,
                  label_type:str = '538',
                  trade_type: str = 'close',
-                 verbose: bool = True):
+                 verbose: bool = True,
+                 model_type: str = 'Train',
+):
         self.sentiment_model = sentiment_model
         self.label_type = label_type
         self.trade_type = trade_type
-        self.layer2_datahandler = layer2_datahandler(sentiment_model = self.sentiment_model,
-                                                     label_type = self.label_type,
-                                                     trade_type = self.trade_type)
+        self.model_type = model_type
+        if self.model_type == 'Train':
+            self.layer2_datahandler = SecondLayerDataHandler(sentiment_model = self.sentiment_model,
+                                                        label_type = self.label_type,
+                                                        trade_type = self.trade_type)
+        else:
+            self.layer2_datahandler = NewsSecondLayerDataHandler(sentiment_model = self.sentiment_model,
+                                                        label_type = self.label_type,
+                                                        trade_type = self.trade_type)
         self.verbose = verbose
 
     def __repr__(self):
@@ -44,13 +55,17 @@ class ProbabilityModeler:
 
     @property
     def params_outputfile(self):
-        params_dir = '../params'
+        if self.model_type == 'Train':
+            params_dir = '../params/train'
+        else:
+            params_dir = '../params/test'
         os.makedirs(params_dir, exist_ok = True)
         return f'{params_dir}/{self.sentiment_model}_{self.layer2_datahandler.DATANAME}_{self.MODELNAME}_params.csv'
 
     def run_model(self, y_var: str = 'p_trump_win'):
         y_var = 'p_trump_win'
         df_data = self.layer2_datahandler.df_all_data
+        df_data = df_data.fillna(0)
         x_vars = [col for col in df_data.columns if col != y_var]
         model = sm.OLS(df_data[y_var], df_data[x_vars]).fit()
         if self.verbose:

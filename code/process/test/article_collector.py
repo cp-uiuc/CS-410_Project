@@ -3,7 +3,7 @@ import time
 import json
 
 # Set your API key
-api_key = 'c6Y7P1PHhZKFzuRM10fZd9WcUQuSTWTAOwalMY3C'
+api_key = '###'
 
 # Define endpoint and parameters
 url = 'https://api.thenewsapi.com/v1/news/all'
