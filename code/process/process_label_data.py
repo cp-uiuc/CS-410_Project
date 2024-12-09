@@ -60,6 +60,10 @@ class LabelTestDataProcessor(LabelDataProcessor):
                  trade_type:str = 'close'):
         super().__init__(label_type = label_type,
                          trade_type = trade_type)
+        
+    @staticmethod
+    def get_label_data(label_type:str, trade_type: str):
+        return LabelTestDataProcessor.get_PredictIt_data(trade_type = trade_type)
 
     @staticmethod
     def get_PredictIt_data(trade_type: str = 'close'):
