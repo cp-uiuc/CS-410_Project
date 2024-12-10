@@ -20,23 +20,13 @@ class SecondLayerDataHandler:
                  trade_type: str = 'close',
                  test_sentiment_model: str = 'ABSA'):
         self.sentiment_model = sentiment_model
-        # self.test_sentiment_model = test_sentiment_model
         self.df_sentiment_data = self.get_sentiment_data()
-        # self.df_test_sentiment_data = self.get_test_sentiment_data()
         self.df_label_data = LabelDataProcessor.get_label_data(label_type = label_type, trade_type = trade_type)
-        # self.df_test_label_data = LabelTestDataProcessor.get_label_data(label_type = label_type, trade_type = trade_type)
         self.df_all_data = self.format_predictor()
-        # self.df_test_data = self.format_test()
 
     def get_sentiment_data(self):
         df_sentiment_data = pd.read_csv(f'../../data/train/processed/{self.sentiment_model}_processed_data.csv')
         df_sentiment_data.index = pd.to_datetime(df_sentiment_data['timestamp']).dt.date
-        df_sentiment_data['date'] = df_sentiment_data.index
-        return df_sentiment_data
-    
-    def get_test_sentiment_data(self):
-        df_sentiment_data = pd.read_csv(f'../../data/test/processed/{self.test_sentiment_model}_processed_news_data.csv')
-        df_sentiment_data.index = pd.to_datetime(df_sentiment_data['timestamp'], unit='ms').dt.date
         df_sentiment_data['date'] = df_sentiment_data.index
         return df_sentiment_data
 
@@ -51,9 +41,6 @@ class SecondLayerDataHandler:
         df_predict_data = df_grouped_data.reset_index().pivot(index = 'date', columns = 'candidate', values = 'ratio')
         df_all_data = pd.merge(df_predict_data, self.df_label_data[['p_trump_win']], left_index = True, right_index = True)
         return df_all_data
-    
-    def format_test(self):
-        pass
 
     def __repr__(self):
         return f'SecondLayerDataHandler:{self.DATANAME}'
@@ -80,9 +67,9 @@ class EnhancedSecondLayerDataHandler(SecondLayerDataHandler):
                  label_type: str = '538',
                  trade_type: str = 'close',
                  y_var: str = 'p_trump_win',
-                 min_likes: int = 1,
-                 min_followers: int = 1,
-                 min_account_age: int = 1,
+                 min_likes: int = 5,
+                 min_followers: int = 5,
+                 min_account_age: int = 30,
                  english_only: bool = True):
         self.y_var = y_var
         self.min_likes = min_likes
@@ -136,51 +123,5 @@ class EnhancedSecondLayerDataHandler(SecondLayerDataHandler):
 
         df_all_data = pd.merge(df_predict_data, self.df_label_data[['p_trump_win']], left_index=True, right_index=True, how='inner')
         df_all_data[f'p_trump_win_rolling'] = df_all_data['p_trump_win'].rolling(window=7, min_periods=1).mean()
-
-        return df_all_data
-
-    def format_test(self):
-        positive_label = {'neutral' : 0, 'positive': 1, 'negative': -1}
-        df_data = self.df_test_sentiment_data.copy()
-
-        trump_data = df_data[df_data['mentions_trump'] == 1].copy()
-        harris_data = df_data[df_data['mentions_harris'] == 1].copy()
-
-        trump_data['sentiment_indic'] = trump_data['trump_sentiment_label'].map(positive_label)
-        harris_data['sentiment_indic'] = harris_data['harris_sentiment_label'].map(positive_label)
-
-        trump_data['candidate'] = 'trump'
-        harris_data['candidate'] = 'other'
-
-        combined_data = pd.concat([trump_data, harris_data], ignore_index=True)
-
-        df_grouped_data = combined_data.groupby(['date', 'candidate']).aggregate({
-            'sentiment_indic': 'mean'
-        }).reset_index().set_index(['date', 'candidate'])
-        
-        df_grouped_data['rolling_sentiment_indic'] = df_grouped_data['sentiment_indic'].rolling(window=7, min_periods=1).mean()
-        df_grouped_data['ratio'] = df_grouped_data['sentiment_indic'] / (df_grouped_data['sentiment_indic'].abs() + 1)
-
-        pivot_fields = [
-            'ratio',
-            'sentiment_indic',
-            'rolling_sentiment_indic',
-        ]
-        pivoted_dfs = {}
-        for field in pivot_fields:
-            pivoted_dfs[field] = df_grouped_data.reset_index().pivot(index='date', columns='candidate', values=field)
-        
-        df_predict_data = pivoted_dfs['ratio']
-        for field, pivoted_df in pivoted_dfs.items():
-            if field != 'ratio':
-                df_predict_data = df_predict_data.join(pivoted_df, rsuffix=f'_{field}')
-
-        df_all_data = pd.merge(df_predict_data, self.df_test_label_data[['p_trump_win']], left_index=True, right_index=True, how='inner')
-        df_all_data[f'p_trump_win_rolling'] = df_all_data['p_trump_win'].rolling(window=7, min_periods=1).mean()
-
-        # drop rows with NaN values
-        df_all_data = df_all_data.dropna()
-
-        print(df_all_data.tail(50))
 
         return df_all_data

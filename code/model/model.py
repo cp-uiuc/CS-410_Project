@@ -14,7 +14,7 @@ import statsmodels.api as sm
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 from sklearn.linear_model import Ridge, Lasso, LinearRegression
 from sklearn.ensemble import GradientBoostingRegressor
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score, accuracy_score
 from sklearn.model_selection import LeaveOneOut, cross_val_score
 
 class ProbabilityModeler:
@@ -42,6 +42,7 @@ class ProbabilityModeler:
         self.trade_type = trade_type
         self.model_type = model_type
         self.kwargs = kwargs
+        self.layer2_datahandler = layer2_datahandler
         if self.model_type == 'Train':
             self.layer2_datahandler = SecondLayerDataHandler(sentiment_model = self.sentiment_model,
                                                         label_type = self.label_type,
@@ -70,8 +71,33 @@ class ProbabilityModeler:
         df_data = df_data.fillna(0)
         x_vars = [col for col in df_data.columns if col != y_var]
         model = sm.OLS(df_data[y_var], df_data[x_vars]).fit()
+        binary_y_pred = np.where(model.predict(df_data[x_vars]) > 0.5, 1, 0)
+        binary_y_true = np.where(df_data[y_var] > 0.5, 1, 0)
+        accuracy = accuracy_score(binary_y_true, binary_y_pred)
         if self.verbose:
-            print(f'Modelname: {self.model_name},Sentiment Model: {self.sentiment_model},  rsquared: {model.rsquared:.2f}')
+            print(f'Modelname: {self.model_name},Sentiment Model: {self.sentiment_model},  accuracy: {accuracy}, rsquared: {model.rsquared:.2f}')
+            # print(f"Actual Counts: {np.unique(binary_y_true, return_counts = True)}, Predicted Counts: {np.unique(binary_y_pred, return_counts = True)}")
+            # # calculate accuracy for each class (other=less than 0.5, trump=greater than 0.5)
+            # actual_classes = np.where(df_data[y_var] < 0.5, 1, 2)
+            # predicted_classes = np.where(model.predict(df_data[x_vars]) < 0.5, 1, 2)
+
+            # # Masks for each class in y_actual
+            # class1_mask = (actual_classes == 1)
+            # class2_mask = (actual_classes == 2)
+
+            # # Accuracy for Class 1
+            # class1_correct = np.sum(predicted_classes[class1_mask] == actual_classes[class1_mask])
+            # class1_total = np.sum(class1_mask)
+            # class1_accuracy = class1_correct / class1_total if class1_total > 0 else 0
+
+            # # Accuracy for Class 2
+            # class2_correct = np.sum(predicted_classes[class2_mask] == actual_classes[class2_mask])
+            # class2_total = np.sum(class2_mask)
+            # class2_accuracy = class2_correct / class2_total if class2_total > 0 else 0
+
+            # # Print results
+            # print(f"Other Accuracy: {class1_accuracy:.2f}")
+            # print(f"Trump Accuracy: {class2_accuracy:.2f}")
         self.save_model(model)
         return model
 
@@ -94,6 +120,8 @@ class EnhancedProbabilityModeler(ProbabilityModeler):
         X = df_data[x_vars]
         y = df_data[y_var]
 
+        # print(df_data.columns)
+
         # df_test_data = self.layer2_datahandler.df_test_data
         # X_test = df_test_data[x_vars]
         # y_test = df_test_data[y_var]
@@ -107,7 +135,7 @@ class EnhancedProbabilityModeler(ProbabilityModeler):
         elif self.model_name == 'Gradient Boosting':
             model = GradientBoostingRegressor(**self.kwargs).fit(X, y)
         elif self.model_name == 'SARIMAX':
-            exog_vars = df_data[['other', 'trump', 'other_sentiment_indic', 'trump_sentiment_indic']]
+            exog_vars = df_data[[c for c in df_data.columns if "p_trump_win" not in c]]
             model = SARIMAX(y, exog = exog_vars, order = (1, 1, 1), seasonal_order = (0, 0, 0, 0)).fit()
             # print(model.summary())
             # y_pred = model.predict(start=len(y), end=len(y) + len(y_test) - 1, exog = X_test[['other', 'trump', 'other_sentiment_indic', 'trump_sentiment_indic']])
@@ -117,36 +145,51 @@ class EnhancedProbabilityModeler(ProbabilityModeler):
         else:
             raise ValueError(f'Invalid model_name: {self.model_name}')
         
-        # if self.model_type == 'SARIMAX':
-        #     prediction = model.predict(start=len(y), end=len(y) + len(y_test) - 1, exog = X_test[['other', 'trump', 'other_sentiment_indic', 'trump_sentiment_indic']])
-        # else:
-        #     prediction = model.predict(X_test)
+        if self.model_type == 'SARIMAX':
+            prediction = model.predict(start=0, end=len(y) - 1, exog = X[['other', 'trump', 'other_sentiment_indic', 'trump_sentiment_indic']]).values()
+        else:
+            prediction = model.predict(X)
 
-        # # if y value > 0.5, predict 1, else predict 0
-        # binary_prediction = np.where(prediction > 0.5, 1, 0)
-        # binary_y_test = np.where(y_test > 0.5, 1, 0)
-
-        # combine y_test and prediction into a dataframe
-        # df = pd.DataFrame({'y_test': binary_y_test, 'prediction': binary_prediction})
-        # print(df.head())
-        # print(df.tail())
-        # # print count of 0 and 1 in y_test and prediction
-        # print(df['y_test'].value_counts())
-        # print(df['prediction'].value_counts())
-
-        # mae, rmse, r2, mape = self.evaluate_model(binary_y_test, binary_prediction)
+        accuracy, mae, rmse, r2, mape = self.evaluate_model(y, prediction)
 
         if self.verbose:
-            print(f'Modelname: {self.model_name}, Sentiment Model: {self.layer2_datahandler.sentiment_model}, kwargs: {self.kwargs}, r2: {r2_score(y, model.predict(X))}')
-            # print(f'Modelname: {self.model_type}, Sentiment Model: {self.layer2_datahandler.sentiment_model}, kwargs: {self.kwargs}, r2: {r2}, mape: {mape}, mae: {mae}, rmse: {rmse}')
+            # print(f'Modelname: {self.model_name}, Sentiment Model: {self.layer2_datahandler.sentiment_model}, kwargs: {self.kwargs}, r2: {r2_score(y, model.predict(X))}')
+            print(f'Modelname: {self.model_name}, Sentiment Model: {self.layer2_datahandler.sentiment_model}, kwargs: {self.kwargs}, accuracy: {accuracy}, r2: {r2}, mape: {mape}, mae: {mae}, rmse: {rmse}')
+            print(f"Actual Counts: {np.unique(np.where(y > 0.5, 1, 0), return_counts = True)}, Predicted Counts: {np.unique(np.where(prediction > 0.5, 1, 0), return_counts = True)}")
         return model
     
     def evaluate_model(self, y_true, y_pred):
+        # accrate means same result prediction: 0 - 0.5, 0.5 - 1
+        binary_y_pred = np.where(y_pred > 0.5, 1, 0)
+        binary_y_true = np.where(y_true > 0.5, 1, 0)
+        accuracy = accuracy_score(binary_y_true, binary_y_pred)
+        
+        # calculate accuracy for each class (other=less than 0.5, trump=greater than 0.5)
+        actual_classes = np.where(y_true < 0.5, 1, 2)
+        predicted_classes = np.where(y_pred < 0.5, 1, 2)
+
+        # Masks for each class in y_actual
+        class1_mask = (actual_classes == 1)
+        class2_mask = (actual_classes == 2)
+
+        # Accuracy for Class 1
+        class1_correct = np.sum(predicted_classes[class1_mask] == actual_classes[class1_mask])
+        class1_total = np.sum(class1_mask)
+        class1_accuracy = class1_correct / class1_total if class1_total > 0 else 0
+
+        # Accuracy for Class 2
+        class2_correct = np.sum(predicted_classes[class2_mask] == actual_classes[class2_mask])
+        class2_total = np.sum(class2_mask)
+        class2_accuracy = class2_correct / class2_total if class2_total > 0 else 0
+
+        # Print results
+        print(f"Other Accuracy: {class1_accuracy:.2f}")
+        print(f"Trump Accuracy: {class2_accuracy:.2f}")
         mae = mean_absolute_error(y_true, y_pred)
         rmse = np.sqrt(mean_squared_error(y_true, y_pred))
         r2 = r2_score(y_true, y_pred)
         mape = np.mean(np.abs((y_true - y_pred) / y_true)) * 100
-        return mae, rmse, r2, mape
+        return accuracy, mae, rmse, r2, mape
 
 
 
@@ -178,23 +221,17 @@ if __name__ == "__main__":
                                                         min_account_age = 0,
                                                         english_only = False)
     prob_modeler_ols = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_name='OLS')
-    prob_modeler_sarimax = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_name='SARIMAX')
+    # prob_modeler_sarimax = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_name='SARIMAX')
     prob_modeler_ridge1 = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_name='Ridge', alpha=0.1)
-    prob_modeler_ridge3 = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_name='Ridge', alpha=0.3)
-    prob_modeler_ridge6 = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_name='Ridge', alpha=0.6)
-    prob_modeler_ridge8 = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_name='Ridge', alpha=0.8)
     # prob_modeler_lasso01 = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_type='Lasso', alpha=0.1)
     prob_modeler_gb1 = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_name='Gradient Boosting', n_estimators=50, max_depth=2)
     prob_modeler_gb2 = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_name='Gradient Boosting', n_estimators=20, max_depth=2)
     prob_modeler_gb3 = EnhancedProbabilityModeler(layer2_datahandler=layer2_datahandler, model_name='Gradient Boosting', n_estimators=100, max_depth=2)
     
     model_pipeline = [
-        prob_modeler_sarimax,
+        # prob_modeler_sarimax,
         prob_modeler_ols, 
         prob_modeler_ridge1,
-        prob_modeler_ridge3,
-        prob_modeler_ridge6,
-        prob_modeler_ridge8, 
         # prob_modeler_lasso01, 
         prob_modeler_gb1,
         prob_modeler_gb2,

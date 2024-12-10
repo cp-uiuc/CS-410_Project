@@ -82,24 +82,42 @@ class TestModelPipeline:
         
 
 if __name__ == "__main__":
-    #Test Model with VADER e.g. 1
-    test_model_pipeline = TestModelPipeline(sentiment_model_name = 'VADER',
-                                          layer2_process_name = '2RATIOS',
-                                          probability_model_name = 'OLS',
-                                          run_sentiment_model = True)
+    # #Test Model with VADER e.g. 1
+    # test_model_pipeline = TestModelPipeline(sentiment_model_name = 'VADER',
+    #                                       layer2_process_name = '2RATIOS',
+    #                                       probability_model_name = 'OLS',
+    #                                       run_sentiment_model = True)
 
-    #Test Model with VADER e.g. 2 (Do not run sentiment model again)
-    test_model_pipeline  = TestModelPipeline(sentiment_model_name = 'VADER',
-                                          layer2_process_name = '1RATIO',
-                                          probability_model_name = 'OLS',
-                                          run_sentiment_model = False)
+    # #Test Model with VADER e.g. 2 (Do not run sentiment model again)
+    # test_model_pipeline  = TestModelPipeline(sentiment_model_name = 'VADER',
+    #                                       layer2_process_name = '1RATIO',
+    #                                       probability_model_name = 'OLS',
+    #                                       run_sentiment_model = False)
     
-    #Test Model with VADER e.g. 3 (Do not run sentiment model again)
-    test_model_pipeline  = TestModelPipeline(sentiment_model_name = 'VADER',
-                                          layer2_process_name = '2RATIOS',
-                                          probability_model_name = 'Gradient Boosting',
-                                          run_sentiment_model = False,
-                                          n_estimators=50, max_depth=2)
+    # #Test Model with VADER and Gradient Boosting
+    # test_model_pipeline  = TestModelPipeline(sentiment_model_name = 'VADER',
+    #                                       layer2_process_name = '2RATIOS',
+    #                                       probability_model_name = 'Gradient Boosting',
+    #                                       run_sentiment_model = False,
+    #                                       n_estimators=50, max_depth=2)
+    
+    # #Test Model with VADER and Ridge
+    # test_model_pipeline  = TestModelPipeline(sentiment_model_name = 'VADER',
+    #                                       layer2_process_name = '2RATIOS',
+    #                                       probability_model_name = 'Ridge',
+    #                                       run_sentiment_model = False)
+    
+    # #Test Model with VADER and Lasso
+    # test_model_pipeline  = TestModelPipeline(sentiment_model_name = 'VADER',
+    #                                       layer2_process_name = '2RATIOS',
+    #                                       probability_model_name = 'Lasso',
+    #                                       run_sentiment_model = False)
+    
+    # #Test Model with VADER and SARIMAX
+    # test_model_pipeline = TestModelPipeline(sentiment_model_name = 'VADER',
+    #                                       layer2_process_name = '2RATIOS',
+    #                                       probability_model_name = 'SARIMAX',
+    #                                       run_sentiment_model= False)
     
     #Test Model with TextBlob 
     test_model_pipeline  = TestModelPipeline(sentiment_model_name = 'TextBlob',
@@ -113,16 +131,52 @@ if __name__ == "__main__":
                                           probability_model_name = 'Gradient Boosting',
                                           run_sentiment_model = False,
                                           n_estimators=50, max_depth=2)
+    
+    # #Test Model with TextBlob, Ridge
+    # test_model_pipeline  = TestModelPipeline(sentiment_model_name = 'TextBlob',
+    #                                       layer2_process_name = '2RATIOS',
+    #                                       probability_model_name = 'Ridge',
+    #                                       run_sentiment_model = False)
+    
+    # #Test Model with TextBlob, Lasso
+    # test_model_pipeline  = TestModelPipeline(sentiment_model_name = 'TextBlob',
+    #                                       layer2_process_name = '2RATIOS',
+    #                                       probability_model_name = 'Lasso',
+    #                                       run_sentiment_model = False)
 
-    #Test Model with ABSA (running sentiment model can take approximately 2-4 hours)
-    test_model_pipeline  = TestModelPipeline(sentiment_model_name='ABSA',
-                                              layer2_process_name='2RATIOS',
-                                              probability_model_name='OLS',
-                                              run_sentiment_model=False)
+    #Test Model with TextBlob, SARIMAX
+    # test_model_pipeline = TestModelPipeline(sentiment_model_name = 'TextBlob',
+    #                                       layer2_process_name = '2RATIOS',
+    #                                       probability_model_name = 'SARIMAX',
+    #                                       run_sentiment_model= False)
 
-    #Test Model with ABSA, Gradient Boosting
-    test_model_pipeline  = TestModelPipeline(sentiment_model_name='ABSA',
-                                              layer2_process_name='2RATIOS',
-                                              probability_model_name='Gradient Boosting',
-                                              run_sentiment_model=False,
-                                              n_estimators=50, max_depth=2)
+    # #Test Model with ABSA (running sentiment model can take approximately 2-4 hours)
+    # test_model_pipeline  = TestModelPipeline(sentiment_model_name='ABSA',
+    #                                           layer2_process_name='2RATIOS',
+    #                                           probability_model_name='OLS',
+    #                                           run_sentiment_model=False)
+
+    # #Test Model with ABSA, Gradient Boosting
+    # test_model_pipeline  = TestModelPipeline(sentiment_model_name='ABSA',
+    #                                           layer2_process_name='2RATIOS',
+    #                                           probability_model_name='Gradient Boosting',
+    #                                           run_sentiment_model=False,
+    #                                           n_estimators=50, max_depth=2)
+
+    # #Test Model with ABSA, Ridge
+    # test_model_pipeline  = TestModelPipeline(sentiment_model_name='ABSA',
+    #                                           layer2_process_name='2RATIOS',
+    #                                           probability_model_name='Ridge',
+    #                                           run_sentiment_model=False)
+
+    # #Test Model with ABSA, Lasso
+    # test_model_pipeline  = TestModelPipeline(sentiment_model_name='ABSA',
+    #                                           layer2_process_name='2RATIOS',
+    #                                           probability_model_name='Lasso',
+    #                                           run_sentiment_model=False)    
+
+    #Test Model with ABSA, SARIMAX    
+    # test_model_pipeline = TestModelPipeline(sentiment_model_name='ABSA',
+    #                                       layer2_process_name='2RATIOS',
+    #                                       probability_model_name='SARIMAX',
+    #                                       run_sentiment_model= False)
