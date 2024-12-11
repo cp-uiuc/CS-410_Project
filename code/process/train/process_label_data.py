@@ -52,6 +52,34 @@ class LabelDataProcessor:
             raise(Exception(f'Unrecognized trade type: {trade_type}'))
             
         return label_data[['p_trump_win', 'p_trump_lose']]
+ 
+class LabelTestDataProcessor(LabelDataProcessor):
 
+    def __init__(self,
+                 label_type: str = '538',
+                 trade_type:str = 'close'):
+        super().__init__(label_type = label_type,
+                         trade_type = trade_type)
+        
+    @staticmethod
+    def get_label_data(label_type:str, trade_type: str):
+        return LabelTestDataProcessor.get_PredictIt_data(trade_type = trade_type)
 
+    @staticmethod
+    def get_PredictIt_data(trade_type: str = 'close'):
+        label_data = pd.read_csv('../../data/test/raw/2024_predictit_data.csv')
+        label_data = label_data.rename(columns = {'Date (ET)': 'modeldate'})
+        label_data.index = pd.to_datetime(label_data['modeldate'])
+        if trade_type == 'close':
+            label_data = label_data.rename(columns = {'Close Share Price': 'p_trump_win'})
+            label_data['p_trump_lose'] = 1 - label_data['p_trump_win']
+
+        elif trade_type == 'average':
+            label_data = label_data.rename(columns = {'Average Trade Price': 'p_trump_win'})
+            label_data['p_trump_lose'] = 1 - label_data['p_trump_win']
+
+        else:
+            raise(Exception(f'Unrecognized trade type: {trade_type}'))
+            
+        return label_data[['p_trump_win', 'p_trump_lose']]
 

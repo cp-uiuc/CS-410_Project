@@ -8,14 +8,18 @@ from news_process_layer2_data import NewsSecondLayerDataHandler, NewsOneRatioSec
 from news_sentiment_analysis import NewsSentimentAnalysis
 
 sys.path.append('../model/')
-from model import ProbabilityModeler
+from model import ProbabilityModeler, EnhancedProbabilityModeler
 
 import numpy as np
 
 LAYER2_DATAHANDLER_MAP = {'2RATIOS': NewsSecondLayerDataHandler,
                           '1RATIO' : NewsOneRatioSecondLayerDataHandler}
 
-PROBABILITY_MODEL_MAP = {'OLS': ProbabilityModeler}
+PROBABILITY_MODEL_MAP = {'OLS': ProbabilityModeler,
+                         'Ridge': EnhancedProbabilityModeler,
+                         'Lasso': EnhancedProbabilityModeler,
+                         'Gradient Boosting': EnhancedProbabilityModeler,
+                         'SARIMAX': EnhancedProbabilityModeler}
 
 class TestModelPipeline:
 
@@ -29,7 +33,8 @@ class TestModelPipeline:
                  sentiment_threshold: float = 0.05,
                  run_sentiment_model: bool = True,
                  label_type: str = '538',
-                 trade_type: str = 'close'):
+                 trade_type: str = 'close',
+                 **kwargs):
         
         self.sentiment_model_name = sentiment_model_name
         self.layer2_process_name = layer2_process_name
@@ -38,13 +43,18 @@ class TestModelPipeline:
         self.run_sentiment_model = run_sentiment_model
         self.label_type = label_type
         self.trade_type = trade_type
+        self.kwargs = kwargs
 
         #Fetch the models
         self.fetch_models()
         self.apply_pipeline()
 
     def fetch_models(self):
-        self.layer2_processor = LAYER2_DATAHANDLER_MAP.get(self.layer2_process_name, None)
+        self.layer2_processor = LAYER2_DATAHANDLER_MAP.get(self.layer2_process_name, None)(
+            sentiment_model = self.sentiment_model_name,
+            label_type = self.label_type,
+            trade_type = self.trade_type
+        )
         self.probability_model = PROBABILITY_MODEL_MAP.get(self.probability_model_name, None)
 
         if self.layer2_processor is None:
@@ -63,8 +73,11 @@ class TestModelPipeline:
             self.sentiment_analyzer.process_news()
 
         #3/4) Apply Layer2DataHandler and apply probability model
-        self.prob_modeler = self.probability_model(sentiment_model= self.sentiment_model_name,
-                                              layer2_datahandler = self.layer2_processor, model_type='Test')
+        self.prob_modeler = self.probability_model(model_type = "Test",
+                                              sentiment_model = self.sentiment_model_name,
+                                              model_name = self.probability_model_name,
+                                              layer2_datahandler = self.layer2_processor,
+                                              **self.kwargs)
         self.prob_modeler.run_model()
         
 
@@ -75,11 +88,6 @@ if __name__ == "__main__":
                                           probability_model_name = 'OLS',
                                           run_sentiment_model = True)
 
-    #Test Model with VADER e.g. 2 (Do not run sentiment model again)
-    test_model_pipeline  = TestModelPipeline(sentiment_model_name = 'VADER',
-                                          layer2_process_name = '1RATIO',
-                                          probability_model_name = 'OLS',
-                                          run_sentiment_model = False)
     
     #Test Model with TextBlob 
     test_model_pipeline  = TestModelPipeline(sentiment_model_name = 'TextBlob',
