@@ -20,7 +20,7 @@ PROBABILITY_MODEL_MAP = {'OLS': ProbabilityModeler}
 class TestModelPipeline:
 
 
-    INPUT_PROCESSED_DATAFILE = '../../data/test/processed/processed_data.csv'
+    INPUT_PROCESSED_DATAFILE = '../../data/test/processed/processed_election_news.json'
 
     def __init__(self,
                  sentiment_model_name: str,
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     test_model_pipeline = TestModelPipeline(sentiment_model_name = 'VADER',
                                           layer2_process_name = '2RATIOS',
                                           probability_model_name = 'OLS',
-                                          run_sentiment_model = False)
+                                          run_sentiment_model = True)
 
     #Test Model with VADER e.g. 2 (Do not run sentiment model again)
     test_model_pipeline  = TestModelPipeline(sentiment_model_name = 'VADER',
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     test_model_pipeline  = TestModelPipeline(sentiment_model_name = 'TextBlob',
                                           layer2_process_name = '2RATIOS',
                                           probability_model_name = 'OLS',
-                                          run_sentiment_model = False)
+                                          run_sentiment_model = True)
 
     #Test Model with ABSA (running sentiment model can take approximately 2-4 hours)
     test_model_pipeline  = TestModelPipeline(sentiment_model_name='ABSA',

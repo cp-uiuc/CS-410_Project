@@ -52,7 +52,7 @@ class NewsSentimentAnalysis:
     def process_news(self):
 
         if self.model != "ABSA":
-            print("Calculating polarity scores and labeling sentiments for each tweet...")
+            print("Calculating polarity scores and labeling sentiments for each news title...")
 
             def calculate_sentiment(row):
                 """
@@ -190,7 +190,7 @@ if __name__ == "__main__":
     output_file = '../../../data/test/processed/TextBlob_processed_news_data.csv'
 
     # Initialize with desired model ('VADER' or 'TextBlob')
-    analyzer = NewsSentimentAnalysis(input_file, output_file, model = "TextBlob")
+    analyzer = NewsSentimentAnalysis(input_file, output_file, model = "VADER")
     analyzer.process_news()
 
     df = pd.read_csv(output_file)
